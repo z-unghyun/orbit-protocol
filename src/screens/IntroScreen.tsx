@@ -1,0 +1,79 @@
+import Orb from '../components/Orb';
+import type { GameConfig } from '../types';
+
+interface IntroScreenProps {
+  isMobile: boolean;
+  game: GameConfig;
+  onStart: () => void;
+}
+
+export default function IntroScreen({ isMobile, game, onStart }: IntroScreenProps) {
+  const contentMaxWidth = isMobile ? '100%' : '640px';
+
+  return (
+    <div
+      style={{
+        animation: 'screenIn .4s cubic-bezier(.16,1,.3,1)',
+        padding: '24px 20px 40px',
+        maxWidth: contentMaxWidth,
+        margin: '0 auto',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0 18px' }}>
+        <Orb gradient={game.gradient} size={150} big />
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: game.accent, marginBottom: 4 }}>
+        {game.nameEn}
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#1a1a1a', marginBottom: 14 }}>
+        {game.nameKo}
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 13.5, lineHeight: 1.6, color: '#635f52', marginBottom: 22, padding: '0 6px' }}>
+        {game.desc}
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 22 }}>
+        {game.tags.map((tag) => (
+          <div
+            key={tag}
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: '#635f52',
+              background: '#f2f0e8',
+              borderRadius: 20,
+              padding: '6px 12px',
+            }}
+          >
+            {tag}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: '#fff', border: '1px solid #eeece5', borderRadius: 16, padding: 16, marginBottom: 24 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#b0ada0', letterSpacing: '.05em', marginBottom: 8 }}>
+          이번 라운드 기준
+        </div>
+        <div style={{ fontSize: 13.5, lineHeight: 1.7, color: '#1a1a1a', fontWeight: 500, whiteSpace: 'pre-line' }}>
+          {game.ruleText}
+        </div>
+      </div>
+
+      <div
+        onClick={onStart}
+        style={{
+          background: game.accent,
+          color: '#fff',
+          textAlign: 'center',
+          padding: 16,
+          borderRadius: 100,
+          fontSize: 15,
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        라운드 시작
+      </div>
+    </div>
+  );
+}
