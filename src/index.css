@@ -47,6 +47,12 @@ a:hover {
   display: none;
 }
 
+.reduce-motion,
+.reduce-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+
 @keyframes orbDrift {
   0% {
     transform: translate(0, 0) rotate(0deg) scale(1);
