@@ -2,10 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import Orb from '../components/Orb';
 import { GAME_ORDER, gameConfig } from '../data/games';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useLocalSave } from '../hooks/useLocalSave';
 
 export default function GameSelectPage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const save = useLocalSave();
   const gridCols = isMobile ? '1fr' : 'repeat(3, 1fr)';
   const wideMaxWidth = isMobile ? '100%' : '1040px';
 
@@ -51,7 +53,7 @@ export default function GameSelectPage() {
                 </div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#1a1a1a', marginBottom: 4 }}>{game.nameKo}</div>
                 <div style={{ fontSize: 11.5, color: '#9a9789' }}>
-                  {game.passed} / {game.total} 라운드 통과
+                  {save.progress[id].highestRoundPassed} / {game.total} 라운드 통과
                 </div>
               </div>
               <div style={{ fontSize: 18, color: '#c9c6b9' }}>›</div>

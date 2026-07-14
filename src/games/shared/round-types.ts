@@ -11,5 +11,12 @@ export interface RoundResult {
   passed: boolean;
   durationMs: number;
   completedAt: number;
-  failureMessage?: string;
+  /** result-screen copy, chosen by the game's own logic.ts based on pass/fail + metrics */
+  message: string;
+}
+
+export function makeSessionId(): string {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }

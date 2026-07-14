@@ -2,12 +2,20 @@ import { useNavigate } from 'react-router-dom';
 import Orb from '../components/Orb';
 import { homeOrbGradient } from '../data/games';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useLocalSave } from '../hooks/useLocalSave';
+import { gameProgressPercent, overallProgressPercent } from '../lib/scoring';
 
 export default function HomePage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const save = useLocalSave();
   const gridCols = isMobile ? '1fr 1fr' : 'repeat(4, 1fr)';
   const wideMaxWidth = isMobile ? '100%' : '1040px';
+
+  const commandProgress = Math.round(gameProgressPercent('command', save));
+  const cargoProgress = Math.round(gameProgressPercent('cargo', save));
+  const vectorProgress = Math.round(gameProgressPercent('vector', save));
+  const overallProgress = Math.round(overallProgressPercent(save));
 
   return (
     <div
@@ -34,19 +42,19 @@ export default function HomePage() {
       <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 10, marginBottom: 28 }}>
         <div style={{ background: '#fff', border: '1px solid #eeece5', borderRadius: 16, padding: '14px 16px' }}>
           <div style={{ fontSize: 10, color: '#9a9789', fontWeight: 600, marginBottom: 6 }}>함교 안정도</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>72%</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>{commandProgress}%</div>
         </div>
         <div style={{ background: '#fff', border: '1px solid #eeece5', borderRadius: 16, padding: '14px 16px' }}>
           <div style={{ fontSize: 10, color: '#9a9789', fontWeight: 600, marginBottom: 6 }}>화물 안전도</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>65%</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>{cargoProgress}%</div>
         </div>
         <div style={{ background: '#fff', border: '1px solid #eeece5', borderRadius: 16, padding: '14px 16px' }}>
           <div style={{ fontSize: 10, color: '#9a9789', fontWeight: 600, marginBottom: 6 }}>항로 정확도</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>58%</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#1a1a1a' }}>{vectorProgress}%</div>
         </div>
         <div style={{ background: '#1a1a1a', border: '1px solid #1a1a1a', borderRadius: 16, padding: '14px 16px' }}>
           <div style={{ fontSize: 10, color: '#cfcdc3', fontWeight: 600, marginBottom: 6 }}>전체 항해 진행률</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>65%</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{overallProgress}%</div>
         </div>
       </div>
 

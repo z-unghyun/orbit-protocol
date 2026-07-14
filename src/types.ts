@@ -10,9 +10,7 @@ export interface GameConfig {
   nameKo: string;
   accent: string;
   total: number;
-  passed: number;
   desc: string;
   tags: string[];
-  ruleText: string;
   gradient: string;
 }

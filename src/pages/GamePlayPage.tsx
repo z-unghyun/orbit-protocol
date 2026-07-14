@@ -1,45 +1,54 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { gameConfig } from '../data/games';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useLocalSave } from '../hooks/useLocalSave';
+import { recordRoundResult, startRound } from '../lib/local-save';
+import { nextRoundForGame } from '../lib/progression';
 import { isGameId } from '../types';
-import VectorPlay, { isVectorCorrect, type VectorAnswer } from '../games/VectorPlay';
-import CargoPlay, { isCargoCorrect, type CargoZoneId } from '../games/CargoPlay';
-import CommandPlay, { type MissionId } from '../games/CommandPlay';
-import type { RoundResultState } from './RoundResultPage';
+import { VECTOR_ROUNDS } from '../games/vector/rounds';
+import VectorRound from '../games/vector/VectorRound';
+import { CARGO_ROUNDS } from '../games/cargo/rounds';
+import CargoRound from '../games/cargo/CargoRound';
+import { COMMAND_ROUNDS } from '../games/command/rounds';
+import CommandRound from '../games/command/CommandRound';
+import type { RoundResult } from '../games/shared/round-types';
 
 export default function GamePlayPage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { gameId } = useParams();
+  const save = useLocalSave();
+  const [paused, setPaused] = useState(false);
+  const [liveScore, setLiveScore] = useState(0);
+  // generated once per mount, purely — never touches local-save during render
+  const [freshSeed] = useState(() => Math.floor(Math.random() * 2 ** 31));
 
-  const [vectorSelected, setVectorSelected] = useState<VectorAnswer | null>(null);
-  const [cargoSelected, setCargoSelected] = useState<CargoZoneId | null>(null);
-  const [commandSelectedId, setCommandSelectedId] = useState<MissionId | null>(null);
-  const [commandExecuted, setCommandExecuted] = useState(false);
+  const validGameId = isGameId(gameId) ? gameId : null;
+  const roundNumber = validGameId ? nextRoundForGame(validGameId, save) : 1;
 
-  if (!isGameId(gameId)) return <Navigate to="/games" replace />;
-  const game = gameConfig[gameId];
+  const resumedInProgress =
+    validGameId && save.inProgress && save.inProgress.gameId === validGameId && save.inProgress.roundNumber === roundNumber
+      ? save.inProgress
+      : null;
+  const seed = resumedInProgress ? resumedInProgress.roundSeed : freshSeed;
+
+  useEffect(() => {
+    if (!validGameId || resumedInProgress) return;
+    startRound({ gameId: validGameId, roundNumber, roundSeed: freshSeed, itemIndex: 0, score: 0, successCount: 0, attemptCount: 0, remainingTimeMs: 0, startedAt: Date.now() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validGameId, roundNumber]);
+
+  if (!validGameId) return <Navigate to="/games" replace />;
+  const game = gameConfig[validGameId];
   const contentMaxWidth = isMobile ? '100%' : '640px';
 
-  const vectorAnswered = vectorSelected !== null;
-  const vectorCorrect = isVectorCorrect(vectorSelected);
-  const cargoAnswered = cargoSelected !== null;
-  const cargoCorrect = isCargoCorrect(cargoSelected);
+  function handleComplete(result: RoundResult) {
+    recordRoundResult(result);
+    navigate(`/games/${validGameId}/result`, { state: { result } });
+  }
 
-  const score =
-    vectorAnswered && vectorCorrect
-      ? 100
-      : cargoAnswered && cargoCorrect
-        ? 100
-        : commandExecuted
-          ? 640
-          : 0;
-
-  const goResult = () => {
-    const state: RoundResultState = { vectorSelected, cargoSelected, commandExecuted };
-    navigate(`/games/${gameId}/result`, { state });
-  };
+  const commonProps = { roundNumber, seed, paused, onScoreChange: setLiveScore, onComplete: handleComplete };
 
   return (
     <div
@@ -62,27 +71,20 @@ export default function GamePlayPage() {
         }}
       >
         <div style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600 }}>
-          라운드 <b>1</b> / {game.total}
+          라운드 <b>{roundNumber}</b> / {game.total}
         </div>
-        <div style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600 }}>점수 {score.toLocaleString()}</div>
-        <div style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600 }}>00:38</div>
+        <div style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600 }}>점수 {liveScore.toLocaleString()}</div>
+        <div
+          onClick={() => setPaused((p) => !p)}
+          style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600, cursor: 'pointer' }}
+        >
+          {paused ? '재개' : '일시정지'}
+        </div>
       </div>
 
-      {game.id === 'vector' && (
-        <VectorPlay selected={vectorSelected} onAnswer={setVectorSelected} onGoResult={goResult} />
-      )}
-      {game.id === 'cargo' && (
-        <CargoPlay selected={cargoSelected} onAnswer={setCargoSelected} onGoResult={goResult} />
-      )}
-      {game.id === 'command' && (
-        <CommandPlay
-          selectedId={commandSelectedId}
-          executed={commandExecuted}
-          onSelect={setCommandSelectedId}
-          onExecute={() => setCommandExecuted(true)}
-          onGoResult={goResult}
-        />
-      )}
+      {validGameId === 'vector' && <VectorRound config={VECTOR_ROUNDS[roundNumber - 1]} {...commonProps} />}
+      {validGameId === 'cargo' && <CargoRound config={CARGO_ROUNDS[roundNumber - 1]} {...commonProps} />}
+      {validGameId === 'command' && <CommandRound config={COMMAND_ROUNDS[roundNumber - 1]} {...commonProps} />}
     </div>
   );
 }
