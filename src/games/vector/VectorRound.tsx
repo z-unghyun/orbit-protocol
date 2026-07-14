@@ -21,12 +21,17 @@ const COLOR_HEX: Record<string, string> = {
 };
 
 const perItemBudgetMs = (round: number) => Math.max(1800, 4200 - round * 120);
+const OVERLAY_MS = 1400;
+
+type Phase = 'active' | 'feedback' | 'overlay';
 
 export default function VectorRound({ roundNumber, config, seed, paused, onScoreChange, onComplete }: VectorRoundProps) {
   const content = useMemo(() => generateVectorRound(config, seed), [config, seed]);
   const [itemIndex, setItemIndex] = useState(0);
   const [records, setRecords] = useState<VectorAnswerRecord[]>([]);
-  const [phase, setPhase] = useState<'active' | 'feedback'>('active');
+  const [phase, setPhase] = useState<Phase>(
+    content.items[0].isSegmentStart && content.items[0].announced ? 'overlay' : 'active'
+  );
   const [chosen, setChosen] = useState<Direction | null>(null);
   const [remainingMs, setRemainingMs] = useState(perItemBudgetMs(roundNumber));
   const roundStartRef = useRef(Date.now());
@@ -52,6 +57,12 @@ export default function VectorRound({ roundNumber, config, seed, paused, onScore
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  useEffect(() => {
+    if (phase !== 'overlay' || paused) return;
+    const t = window.setTimeout(() => setPhase('active'), OVERLAY_MS);
+    return () => window.clearTimeout(t);
+  }, [phase, paused]);
+
   function commitAnswer(direction: Direction | null) {
     const correct = direction !== null && direction === currentItem.correctDirection;
     const record: VectorAnswerRecord = { item: currentItem, chosen: direction, correct };
@@ -67,10 +78,13 @@ export default function VectorRound({ roundNumber, config, seed, paused, onScore
       finish();
       return;
     }
-    setItemIndex((i) => i + 1);
+    const nextIndex = itemIndex + 1;
+    const nextItem = content.items[nextIndex];
+    setItemIndex(nextIndex);
     setChosen(null);
-    setPhase('active');
     setRemainingMs(perItemBudgetMs(roundNumber));
+    // fires exactly once per transition (segment start only, not the whole post-transition window)
+    setPhase(nextItem.isSegmentStart && nextItem.announced ? 'overlay' : 'active');
   }
 
   function finish() {
@@ -94,6 +108,7 @@ export default function VectorRound({ roundNumber, config, seed, paused, onScore
   }
 
   const answered = phase === 'feedback';
+  const inOverlay = phase === 'overlay';
   const isCorrect = answered && chosen === currentItem.correctDirection;
   const leftPicked = chosen === 'left';
   const rightPicked = chosen === 'right';
@@ -105,60 +120,66 @@ export default function VectorRound({ roundNumber, config, seed, paused, onScore
   });
 
   const scoreDelta = answered ? scoreForAnswer(currentItem, isCorrect) : 0;
-
-  const showTransitionBanner = currentItem.isPostTransition && currentItem.announced;
+  const rule = effectiveCriterionRule(currentItem.criterion, config.reversal);
 
   return (
-    <>
-      {config.reversal && (
+    <div style={{ position: 'relative' }}>
+      {inOverlay && (
         <div
           style={{
-            background: '#3a2a1f',
-            color: '#ffb37a',
-            borderRadius: 14,
-            padding: '10px 14px',
-            marginBottom: 14,
-            fontSize: 12,
-            fontWeight: 700,
+            position: 'absolute',
+            inset: 0,
+            zIndex: 5,
+            background: 'rgba(20,14,10,.88)',
+            borderRadius: 20,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
             textAlign: 'center',
+            animation: 'popIn .3s ease',
           }}
         >
-          🔄 중력장 반전 활성화 — 좌우 명령이 반대로 적용됩니다
+          <div style={{ fontSize: 26, marginBottom: 10 }}>⚠</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 6 }}>기준이 전환되었습니다</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#ffb37a' }}>새 기준: {CRITERION_LABELS[currentItem.criterion]}</div>
+          {config.reversal && (
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#ff9d7a', marginTop: 10 }}>🔄 중력장 반전도 함께 적용됩니다</div>
+          )}
         </div>
       )}
 
-      {showTransitionBanner && (
-        <div
-          key={itemIndex}
-          style={{
-            background: '#fdeceb',
-            border: '1px solid #f3c9c4',
-            borderRadius: 14,
-            padding: '12px 14px',
-            marginBottom: 14,
-            fontSize: 13,
-            fontWeight: 700,
-            color: '#c23b2e',
-            textAlign: 'center',
-            animation: 'popIn .35s ease',
-          }}
-        >
-          ⚠ 기준이 전환되었습니다 · 새 기준: {CRITERION_LABELS[currentItem.criterion]}
-        </div>
-      )}
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontSize: 11, color: '#9a9789', fontWeight: 600 }}>
-          신호 {itemIndex + 1} / {content.items.length}
-        </div>
+      <div style={{ fontSize: 11, color: '#9a9789', fontWeight: 600, marginBottom: 10 }}>
+        신호 {itemIndex + 1} / {content.items.length}
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #eeece5', borderRadius: 16, padding: '14px 16px', marginBottom: 18 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: '#b0ada0', marginBottom: 6 }}>
+      <div
+        style={{
+          background: config.reversal ? '#fdeceb' : '#fff',
+          border: `1px solid ${config.reversal ? '#f3c9c4' : '#eeece5'}`,
+          borderRadius: 16,
+          padding: '14px 16px',
+          marginBottom: 18,
+        }}
+      >
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: config.reversal ? '#c23b2e' : '#b0ada0', marginBottom: 6 }}>
           현재 기준 · {CRITERION_LABELS[currentItem.criterion]}
         </div>
-        <div style={{ fontSize: 13, color: '#1a1a1a', fontWeight: 500 }}>
-          {effectiveCriterionRule(currentItem.criterion, config.reversal)}
+        {config.reversal && (
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#c23b2e', marginBottom: 8 }}>
+            🔄 중력장 반전 활성화 — 좌우 명령이 반대로 적용됩니다
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1, background: '#fff', borderRadius: 10, padding: '8px 10px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#1a1a1a', marginBottom: 2 }}>◀ 좌측 회피</div>
+            <div style={{ fontSize: 11.5, color: '#635f52' }}>{rule.left.join(' · ')}</div>
+          </div>
+          <div style={{ flex: 1, background: '#fff', borderRadius: 10, padding: '8px 10px', textAlign: 'right' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#1a1a1a', marginBottom: 2 }}>우측 회피 ▶</div>
+            <div style={{ fontSize: 11.5, color: '#635f52' }}>{rule.right.join(' · ')}</div>
+          </div>
         </div>
       </div>
 
@@ -192,16 +213,16 @@ export default function VectorRound({ roundNumber, config, seed, paused, onScore
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
         <button
           type="button"
-          onClick={() => !answered && !paused && commitAnswer('left')}
-          disabled={answered || paused}
+          onClick={() => !answered && !paused && !inOverlay && commitAnswer('left')}
+          disabled={answered || paused || inOverlay}
           style={{ flex: 1, textAlign: 'center', padding: '18px 0', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', ...optionStyle(leftPicked) }}
         >
           ◀ 좌측 회피
         </button>
         <button
           type="button"
-          onClick={() => !answered && !paused && commitAnswer('right')}
-          disabled={answered || paused}
+          onClick={() => !answered && !paused && !inOverlay && commitAnswer('right')}
+          disabled={answered || paused || inOverlay}
           style={{ flex: 1, textAlign: 'center', padding: '18px 0', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', ...optionStyle(rightPicked) }}
         >
           우측 회피 ▶
@@ -215,6 +236,6 @@ export default function VectorRound({ roundNumber, config, seed, paused, onScore
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

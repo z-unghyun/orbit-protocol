@@ -1,4 +1,4 @@
-import type { Direction, VectorCriterionType, VectorRoundConfig, VectorRoundItem } from './types';
+import type { Direction, VectorCriterionType, VectorRoundItem } from './types';
 
 export interface VectorAnswerRecord {
   item: VectorRoundItem;
@@ -77,23 +77,22 @@ export const CRITERION_LABELS: Record<VectorCriterionType, string> = {
   approach: '접근 방향',
 };
 
-export const CRITERION_RULES: Record<VectorCriterionType, string> = {
-  color: '적색·황색 → 좌측 회피 / 청색·녹색 → 우측 회피',
-  dangerTier: '홀수 → 좌측 회피 / 짝수 → 우측 회피',
-  shape: '각진 신호 → 좌측 회피 / 둥근 신호 → 우측 회피',
-  approach: '좌측 접근 → 우측 회피 / 우측 접근 → 좌측 회피',
-};
-
-/** rule text with 좌/우 swapped when the round's reversal modifier is active */
-export function effectiveCriterionRule(criterion: VectorCriterionType, reversal: boolean): string {
-  const rule = CRITERION_RULES[criterion];
-  if (!reversal) return rule;
-  const marker = '@@L@@';
-  return rule.split('좌측').join(marker).split('우측').join('좌측').split(marker).join('우측');
+export interface DirectionalRule {
+  /** trigger values that mean "evade left" */
+  left: string[];
+  /** trigger values that mean "evade right" */
+  right: string[];
 }
 
-export function introRuleText(config: VectorRoundConfig): string {
-  const lines = config.criteriaPool.map((c) => `${CRITERION_LABELS[c]} 기준\n${effectiveCriterionRule(c, config.reversal)}`);
-  const base = lines.join('\n\n');
-  return config.reversal ? `${base}\n\n⚠ 중력장 반전 활성화 — 좌우 명령이 반대로 적용됩니다` : base;
+export const CRITERION_RULES: Record<VectorCriterionType, DirectionalRule> = {
+  color: { left: ['적색', '황색'], right: ['청색', '녹색'] },
+  dangerTier: { left: ['홀수'], right: ['짝수'] },
+  shape: { left: ['각진 신호'], right: ['둥근 신호'] },
+  approach: { left: ['우측 접근'], right: ['좌측 접근'] },
+};
+
+/** rule with left/right swapped when the round's reversal modifier is active */
+export function effectiveCriterionRule(criterion: VectorCriterionType, reversal: boolean): DirectionalRule {
+  const rule = CRITERION_RULES[criterion];
+  return reversal ? { left: rule.right, right: rule.left } : rule;
 }
