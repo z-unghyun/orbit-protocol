@@ -1,13 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import Orb from '../components/Orb';
 import { GAME_ORDER, gameConfig } from '../data/games';
-import type { GameId } from '../types';
+import { useIsMobile } from '../hooks/useIsMobile';
 
-interface SelectScreenProps {
-  isMobile: boolean;
-  onEnter: (id: GameId) => void;
-}
-
-export default function SelectScreen({ isMobile, onEnter }: SelectScreenProps) {
+export default function GameSelectPage() {
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const gridCols = isMobile ? '1fr' : 'repeat(3, 1fr)';
   const wideMaxWidth = isMobile ? '100%' : '1040px';
 
@@ -31,7 +29,7 @@ export default function SelectScreen({ isMobile, onEnter }: SelectScreenProps) {
           return (
             <div
               key={id}
-              onClick={() => onEnter(id)}
+              onClick={() => navigate(`/games/${id}`)}
               style={{
                 background: '#fff',
                 border: '1px solid #eeece5',

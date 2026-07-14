@@ -1,12 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import Orb from '../components/Orb';
 import { homeOrbGradient } from '../data/games';
+import { useIsMobile } from '../hooks/useIsMobile';
 
-interface HomeScreenProps {
-  isMobile: boolean;
-  onGoSelect: () => void;
-}
-
-export default function HomeScreen({ isMobile, onGoSelect }: HomeScreenProps) {
+export default function HomePage() {
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const gridCols = isMobile ? '1fr 1fr' : 'repeat(4, 1fr)';
   const wideMaxWidth = isMobile ? '100%' : '1040px';
 
@@ -52,7 +51,7 @@ export default function HomeScreen({ isMobile, onGoSelect }: HomeScreenProps) {
       </div>
 
       <div
-        onClick={onGoSelect}
+        onClick={() => navigate('/games')}
         style={{
           background: '#1a1a1a',
           color: '#fff',

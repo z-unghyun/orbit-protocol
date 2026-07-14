@@ -1,6 +1,8 @@
 export type GameId = 'vector' | 'cargo' | 'command';
 
-export type ScreenId = 'home' | 'select' | 'intro' | 'play' | 'result';
+export function isGameId(value: string | undefined): value is GameId {
+  return value === 'vector' || value === 'cargo' || value === 'command';
+}
 
 export interface GameConfig {
   id: GameId;

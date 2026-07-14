@@ -1,13 +1,16 @@
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import Orb from '../components/Orb';
-import type { GameConfig } from '../types';
+import { gameConfig } from '../data/games';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { isGameId } from '../types';
 
-interface IntroScreenProps {
-  isMobile: boolean;
-  game: GameConfig;
-  onStart: () => void;
-}
+export default function GameIntroPage() {
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { gameId } = useParams();
 
-export default function IntroScreen({ isMobile, game, onStart }: IntroScreenProps) {
+  if (!isGameId(gameId)) return <Navigate to="/games" replace />;
+  const game = gameConfig[gameId];
   const contentMaxWidth = isMobile ? '100%' : '640px';
 
   return (
@@ -60,7 +63,7 @@ export default function IntroScreen({ isMobile, game, onStart }: IntroScreenProp
       </div>
 
       <div
-        onClick={onStart}
+        onClick={() => navigate(`/games/${gameId}/play`)}
         style={{
           background: game.accent,
           color: '#fff',
