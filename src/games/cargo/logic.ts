@@ -41,8 +41,13 @@ export function computeMetrics(records: CargoAnswerRecord[]): CargoMetrics {
 }
 
 /** handoff §7.14 통과 기준 */
+export const PASS_THRESHOLDS = {
+  accuracy: 0.7,
+  maxHazardMisses: 2,
+};
+
 export function checkPass(metrics: CargoMetrics): boolean {
-  return metrics.accuracy >= 0.7 && metrics.hazardMisses < 2;
+  return metrics.accuracy >= PASS_THRESHOLDS.accuracy && metrics.hazardMisses < PASS_THRESHOLDS.maxHazardMisses;
 }
 
 export function pickResultMessage(passed: boolean, metrics: CargoMetrics): string {
@@ -53,11 +58,26 @@ export function pickResultMessage(passed: boolean, metrics: CargoMetrics): strin
   return '예외 규칙에서 혼동이 있었습니다. 다시 시도해 보세요.';
 }
 
+/**
+ * 우선순위(특수 > 예외 > 조합 > 일반) 순서 그대로 나열한다.
+ * generate.ts의 resolveZone과 반드시 1:1로 대응해야 한다 — 여기 없는 규칙은
+ * 화면에도 나타나선 안 되고, resolveZone에 있는 규칙은 반드시 여기 문서화한다.
+ */
 export function describeCargoRules(config: CargoRoundConfig): string {
-  const lines = ['청색 연료 셀은 동력실로 보낸다.'];
-  if (config.hasComboRule) lines.push('생체 반응이 있는 표본은 연구실로 보낸다.\n단, 동결 표시가 있는 생체 표본은 냉동 보관실로 보낸다.');
-  if (config.hasExceptionRule) lines.push('위험 등급 4 이상은 다른 규칙보다 먼저 격리실로 보낸다.');
-  if (config.hasQuarantineAlert) lines.push('격리 경보 아이콘이 있으면 즉시 격리실로 보낸다.');
-  if (config.hasMemoryRule) lines.push('직전 화물과 같은 색상이면 임시 보류 구역으로 보낸다.');
-  return lines.join('\n\n');
+  const lines: string[] = [];
+  if (config.hasMemoryRule) lines.push('[최우선] 직전 화물과 같은 색상이면 임시 보류 구역으로 보낸다.');
+  if (config.hasQuarantineAlert) lines.push('[최우선] 격리 경보 아이콘이 있으면 즉시 격리실로 보낸다.');
+  if (config.hasExceptionRule) lines.push('[예외] 위험 등급 4 이상은 다른 규칙보다 먼저 격리실로 보낸다.');
+  if (config.hasComboRule) {
+    lines.push('[조합] 생체 반응이 있고 동결 표시가 있는 표본은 냉동 보관실로 보낸다.');
+    lines.push('[조합] 그 외 생체 반응이 있는 표본은 연구실로 보낸다.');
+  }
+  lines.push('청색 연료 셀은 동력실로 보낸다.');
+  if (config.midRoundRuleSwap) {
+    lines.push('흰색 화물은 우주 폐기 구역으로 보낸다. (라운드 후반부에는 임시 보류 구역으로 바뀐다)');
+  } else {
+    lines.push('흰색 화물은 우주 폐기 구역으로 보낸다.');
+  }
+  lines.push('위 규칙에 해당하지 않는 화물은 일반 화물칸으로 보낸다.');
+  return lines.join('\n');
 }

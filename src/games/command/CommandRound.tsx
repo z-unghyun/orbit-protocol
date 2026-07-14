@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { generateCommandRound } from './generate';
 import { applyEffect, canAfford, checkPass, deduct, pickResultMessage, scoreForMission } from './logic';
+import { missionById } from './mission-catalog';
 import type { CommandRoundConfig, MissionTemplate, ResourceBudget } from './types';
 import { makeSessionId, type RoundResult } from '../shared/round-types';
 
@@ -20,7 +21,7 @@ export default function CommandRound({ roundNumber, config, seed, paused, onScor
   const mandatoryIds = useMemo(() => new Set(content.missions.filter((m) => m.mandatory).map((m) => m.id)), [content]);
 
   const [phase, setPhase] = useState<Phase>('plan');
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(mandatoryIds));
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [remaining, setRemaining] = useState<ResourceBudget>(config.budget);
   const [hull, setHull] = useState(config.hull);
   const [executeIndex, setExecuteIndex] = useState(0);
@@ -32,24 +33,39 @@ export default function CommandRound({ roundNumber, config, seed, paused, onScor
   const queue = content.missions.filter((m) => selectedIds.has(m.id));
   const startedAt = roundStartRef;
 
+  // mission id -> names of missions that require it, so a card can say "unlocks X"
+  const dependentsOf = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const m of content.missions) {
+      if (!m.prereqId) continue;
+      map.set(m.prereqId, [...(map.get(m.prereqId) ?? []), m.name]);
+    }
+    return map;
+  }, [content]);
+
+  function sumCosts(missions: MissionTemplate[]): ResourceBudget {
+    return missions.reduce(
+      (acc, m) => ({
+        power: acc.power + (m.cost.power ?? 0),
+        crew: acc.crew + (m.cost.crew ?? 0),
+        turns: acc.turns + (m.cost.turns ?? 0),
+        parts: acc.parts + (m.cost.parts ?? 0),
+      }),
+      { power: 0, crew: 0, turns: 0, parts: 0 }
+    );
+  }
+
+  const planRemaining = deduct(config.budget, sumCosts(queue));
+
   function toggleMission(mission: MissionTemplate) {
-    if (paused || mandatoryIds.has(mission.id)) return;
+    if (paused) return;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(mission.id)) {
         next.delete(mission.id);
       } else {
-        const wouldSpend = content.missions.filter((m) => next.has(m.id) || m.id === mission.id);
-        const totalCost = wouldSpend.reduce(
-          (acc, m) => ({
-            power: acc.power + (m.cost.power ?? 0),
-            crew: acc.crew + (m.cost.crew ?? 0),
-            turns: acc.turns + (m.cost.turns ?? 0),
-            parts: acc.parts + (m.cost.parts ?? 0),
-          }),
-          { power: 0, crew: 0, turns: 0, parts: 0 }
-        );
-        if (!canAfford(config.budget, totalCost)) return prev;
+        const wouldSpend = sumCosts(content.missions.filter((m) => next.has(m.id) || m.id === mission.id));
+        if (!canAfford(config.budget, wouldSpend)) return prev;
         next.add(mission.id);
       }
       return next;
@@ -141,12 +157,15 @@ export default function CommandRound({ roundNumber, config, seed, paused, onScor
   if (phase === 'plan') {
     return (
       <>
-        <ResourceBar remaining={remaining} />
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#b0ada0', margin: '4px 0 10px' }}>임무를 선택하세요</div>
+        <ResourceBar remaining={planRemaining} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#b0ada0', margin: '4px 0 10px' }}>
+          임무를 선택하세요 · 선택할 때마다 위 자원이 즉시 차감됩니다
+        </div>
         {content.missions.map((m) => {
           const locked = isLocked(m);
           const selected = selectedIds.has(m.id);
           const isMandatory = mandatoryIds.has(m.id);
+          const unlocks = dependentsOf.get(m.id);
           const costText = [
             m.cost.power ? `전력 ${m.cost.power}` : null,
             m.cost.crew ? `승무원 ${m.cost.crew}` : null,
@@ -186,8 +205,11 @@ export default function CommandRound({ roundNumber, config, seed, paused, onScor
                 </div>
               </div>
               <div style={{ fontSize: 11.5, color: '#9a9789' }}>
-                {locked ? `선행 조건 필요` : costText}
+                {locked ? `🔗 선행 조건: ${missionById(m.prereqId!).name} 먼저 선택` : costText}
               </div>
+              {unlocks && !locked && (
+                <div style={{ fontSize: 11, color: '#5b7fd6', marginTop: 4 }}>🔗 선행 임무 · {unlocks.join(', ')} 잠금 해제</div>
+              )}
             </button>
           );
         })}

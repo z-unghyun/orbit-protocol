@@ -35,8 +35,10 @@ export function importanceWeightedSuccessRate(completed: MissionTemplate[], all:
   return (completedWeight / totalWeight) * 100;
 }
 
+export const SCORE_PER_IMPORTANCE = 200;
+
 export function scoreForMission(mission: MissionTemplate): number {
-  return mission.importance * 200;
+  return mission.importance * SCORE_PER_IMPORTANCE;
 }
 
 export interface CommandSettlement {

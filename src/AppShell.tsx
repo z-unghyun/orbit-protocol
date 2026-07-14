@@ -6,7 +6,6 @@ import HamburgerMenu from './components/HamburgerMenu';
 import { gameConfig } from './data/games';
 import { useIsMobile } from './hooks/useIsMobile';
 import { useLocalSave } from './hooks/useLocalSave';
-import { updateSettings } from './lib/local-save';
 import { isGameId } from './types';
 
 const TITLES: Record<string, string> = {
@@ -31,7 +30,6 @@ export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => setMenuOpen((v) => !v);
-  const toggleSound = () => updateSettings({ soundOn: !save.settings.soundOn });
 
   const goHome = () => {
     setMenuOpen(false);
@@ -70,30 +68,27 @@ export default function AppShell() {
   const showBack = !showHamburger;
 
   const topNavItems = [
-    { label: 'COMMAND DECK', onClick: () => openGame('command') },
-    { label: 'CARGO CORE', onClick: () => openGame('cargo') },
     { label: 'VECTOR SHIFT', onClick: () => openGame('vector') },
-    { label: '항해 기록', onClick: goTo('/history') },
+    { label: 'CARGO CORE', onClick: () => openGame('cargo') },
+    { label: 'COMMAND DECK', onClick: () => openGame('command') },
     { label: '랭킹', onClick: goTo('/leaderboard') },
-    { label: '게임 안내', onClick: goTo('/guide') },
   ];
 
   const menuItems = [
-    { label: 'COMMAND DECK', onClick: () => openGame('command') },
-    { label: 'CARGO CORE', onClick: () => openGame('cargo') },
     { label: 'VECTOR SHIFT', onClick: () => openGame('vector') },
+    { label: 'CARGO CORE', onClick: () => openGame('cargo') },
+    { label: 'COMMAND DECK', onClick: () => openGame('command') },
     { label: '항해 기록', onClick: goTo('/history') },
     { label: '랭킹', onClick: goTo('/leaderboard') },
     { label: '게임 안내', onClick: goTo('/guide') },
     { label: '서비스 안내', onClick: goTo('/about') },
-    { label: '로그인 / 로그아웃', badge: '준비중', onClick: goTo('/login') },
+    { label: '저장 (로그인)', badge: '준비중', onClick: goTo('/login') },
   ];
 
   const isGameFlow = location.pathname.startsWith('/games/');
   const navTabs = [
     { label: '홈', active: isHome, onClick: goHome },
     { label: '게임', active: isSelect || isGameFlow, onClick: goSelect },
-    { label: '항해 기록', active: location.pathname === '/history', onClick: goTo('/history') },
     { label: '랭킹', active: location.pathname === '/leaderboard', onClick: goTo('/leaderboard') },
   ];
 
@@ -121,11 +116,10 @@ export default function AppShell() {
           showBack={showBack}
           showHamburger={showHamburger}
           headerTitle={headerTitle}
-          soundOn={save.settings.soundOn}
           topNavItems={topNavItems}
           onBack={goBack}
           onToggleMenu={toggleMenu}
-          onToggleSound={toggleSound}
+          onSave={goTo('/login')}
           onGoHome={goHome}
         />
 

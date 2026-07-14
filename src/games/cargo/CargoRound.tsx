@@ -29,7 +29,10 @@ export default function CargoRound({ roundNumber, config, seed, paused, onScoreC
   const [phase, setPhase] = useState<'active' | 'feedback'>('active');
   const [chosen, setChosen] = useState<CargoZoneId | null>(null);
   const [streak, setStreak] = useState(0);
-  const [rulePanelOpen, setRulePanelOpen] = useState(config.ruleAlwaysVisible);
+  // always show the rule panel for at least the round's first item, even when
+  // the round later collapses it — otherwise a newly-added rule for this round
+  // never gets seen before the player starts answering
+  const [rulePanelOpen, setRulePanelOpen] = useState(true);
   const [recallsLeft, setRecallsLeft] = useState(config.ruleRecallCount);
   const totalMs = config.perItemSeconds * 1000;
   const [remainingMs, setRemainingMs] = useState(totalMs);

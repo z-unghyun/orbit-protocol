@@ -8,11 +8,10 @@ interface HeaderProps {
   showBack: boolean;
   showHamburger: boolean;
   headerTitle: string;
-  soundOn: boolean;
   topNavItems: NavItem[];
   onBack: () => void;
   onToggleMenu: () => void;
-  onToggleSound: () => void;
+  onSave: () => void;
   onGoHome: () => void;
 }
 
@@ -23,15 +22,12 @@ export default function Header({
   showBack,
   showHamburger,
   headerTitle,
-  soundOn,
   topNavItems,
   onBack,
   onToggleMenu,
-  onToggleSound,
+  onSave,
   onGoHome,
 }: HeaderProps) {
-  const soundLabel = soundOn ? 'SOUND ON' : 'MUTED';
-
   if (isMobile) {
     return (
       <div
@@ -88,7 +84,7 @@ export default function Header({
 
         <button
           type="button"
-          onClick={onToggleSound}
+          onClick={onSave}
           style={{
             ...btnReset,
             fontSize: 10,
@@ -102,7 +98,7 @@ export default function Header({
             textAlign: 'center',
           }}
         >
-          {soundLabel}
+          저장
         </button>
       </div>
     );
@@ -126,24 +122,6 @@ export default function Header({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 44 }}>
-        {showBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            style={{
-              ...btnReset,
-              fontSize: 15,
-              fontWeight: 600,
-              color: '#1a1a1a',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: 0,
-            }}
-          >
-            ← 뒤로
-          </button>
-        )}
         <button
           type="button"
           onClick={onGoHome}
@@ -183,7 +161,7 @@ export default function Header({
       </div>
       <button
         type="button"
-        onClick={onToggleSound}
+        onClick={onSave}
         style={{
           ...btnReset,
           fontSize: 11,
@@ -197,7 +175,7 @@ export default function Header({
           flex: 'none',
         }}
       >
-        {soundLabel}
+        저장
       </button>
     </div>
   );

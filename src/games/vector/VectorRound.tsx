@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { generateVectorRound } from './generate';
-import { CRITERION_LABELS, CRITERION_RULES, checkPass, computeMetrics, pickResultMessage, scoreForAnswer, type VectorAnswerRecord } from './logic';
+import { CRITERION_LABELS, checkPass, computeMetrics, effectiveCriterionRule, pickResultMessage, scoreForAnswer, type VectorAnswerRecord } from './logic';
 import type { Direction, VectorRoundConfig } from './types';
 import { makeSessionId, type RoundResult } from '../shared/round-types';
 
@@ -106,24 +106,60 @@ export default function VectorRound({ roundNumber, config, seed, paused, onScore
 
   const scoreDelta = answered ? scoreForAnswer(currentItem, isCorrect) : 0;
 
+  const showTransitionBanner = currentItem.isPostTransition && currentItem.announced;
+
   return (
     <>
+      {config.reversal && (
+        <div
+          style={{
+            background: '#3a2a1f',
+            color: '#ffb37a',
+            borderRadius: 14,
+            padding: '10px 14px',
+            marginBottom: 14,
+            fontSize: 12,
+            fontWeight: 700,
+            textAlign: 'center',
+          }}
+        >
+          🔄 중력장 반전 활성화 — 좌우 명령이 반대로 적용됩니다
+        </div>
+      )}
+
+      {showTransitionBanner && (
+        <div
+          key={itemIndex}
+          style={{
+            background: '#fdeceb',
+            border: '1px solid #f3c9c4',
+            borderRadius: 14,
+            padding: '12px 14px',
+            marginBottom: 14,
+            fontSize: 13,
+            fontWeight: 700,
+            color: '#c23b2e',
+            textAlign: 'center',
+            animation: 'popIn .35s ease',
+          }}
+        >
+          ⚠ 기준이 전환되었습니다 · 새 기준: {CRITERION_LABELS[currentItem.criterion]}
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <div style={{ fontSize: 11, color: '#9a9789', fontWeight: 600 }}>
           신호 {itemIndex + 1} / {content.items.length}
         </div>
-        {currentItem.isPostTransition && currentItem.announced && (
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#a4791f', background: '#f7f0dd', borderRadius: 20, padding: '3px 8px' }}>
-            ⚠ 기준 전환
-          </div>
-        )}
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #eeece5', borderRadius: 16, padding: '14px 16px', marginBottom: 18 }}>
         <div style={{ fontSize: 10.5, fontWeight: 700, color: '#b0ada0', marginBottom: 6 }}>
           현재 기준 · {CRITERION_LABELS[currentItem.criterion]}
         </div>
-        <div style={{ fontSize: 13, color: '#1a1a1a', fontWeight: 500 }}>{CRITERION_RULES[currentItem.criterion]}</div>
+        <div style={{ fontSize: 13, color: '#1a1a1a', fontWeight: 500 }}>
+          {effectiveCriterionRule(currentItem.criterion, config.reversal)}
+        </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', margin: '22px 0 16px' }}>

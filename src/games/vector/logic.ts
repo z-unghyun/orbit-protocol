@@ -41,8 +41,18 @@ export function computeMetrics(records: VectorAnswerRecord[]): VectorMetrics {
 }
 
 /** handoff §8.12 통과 기준 */
+export const PASS_THRESHOLDS = {
+  overallAccuracy: 0.7,
+  postTransitionAccuracy: 0.5,
+  timeoutRatio: 0.3,
+};
+
 export function checkPass(metrics: VectorMetrics): boolean {
-  return metrics.overallAccuracy >= 0.7 && metrics.postTransitionAccuracy >= 0.5 && metrics.timeoutRatio < 0.3;
+  return (
+    metrics.overallAccuracy >= PASS_THRESHOLDS.overallAccuracy &&
+    metrics.postTransitionAccuracy >= PASS_THRESHOLDS.postTransitionAccuracy &&
+    metrics.timeoutRatio < PASS_THRESHOLDS.timeoutRatio
+  );
 }
 
 export function pickResultMessage(passed: boolean, metrics: VectorMetrics): string {
@@ -74,8 +84,16 @@ export const CRITERION_RULES: Record<VectorCriterionType, string> = {
   approach: '좌측 접근 → 우측 회피 / 우측 접근 → 좌측 회피',
 };
 
+/** rule text with 좌/우 swapped when the round's reversal modifier is active */
+export function effectiveCriterionRule(criterion: VectorCriterionType, reversal: boolean): string {
+  const rule = CRITERION_RULES[criterion];
+  if (!reversal) return rule;
+  const marker = '@@L@@';
+  return rule.split('좌측').join(marker).split('우측').join('좌측').split(marker).join('우측');
+}
+
 export function introRuleText(config: VectorRoundConfig): string {
-  const lines = config.criteriaPool.map((c) => `${CRITERION_LABELS[c]} 기준\n${CRITERION_RULES[c]}`);
+  const lines = config.criteriaPool.map((c) => `${CRITERION_LABELS[c]} 기준\n${effectiveCriterionRule(c, config.reversal)}`);
   const base = lines.join('\n\n');
-  return config.reversal ? `${base}\n\n중력장 반전 — 좌우 명령이 반대로 적용됩니다` : base;
+  return config.reversal ? `${base}\n\n⚠ 중력장 반전 활성화 — 좌우 명령이 반대로 적용됩니다` : base;
 }
