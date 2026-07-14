@@ -62,12 +62,13 @@ export default function FinalResultPage() {
         );
       })}
 
-      <div
+      <button
+        type="button"
         onClick={() => navigate('/games')}
-        style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 18 }}
+        style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 18, width: '100%', border: 'none', fontFamily: 'inherit' }}
       >
         관제 구역 선택으로
-      </div>
+      </button>
     </div>
   );
 }

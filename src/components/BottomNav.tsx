@@ -8,8 +8,9 @@ export default function BottomNav({ tabs }: { tabs: NavTab[] }) {
   return (
     <div style={{ flex: 'none', display: 'flex', borderTop: '1px solid #eeece5', background: '#fefefc' }}>
       {tabs.map((tab) => (
-        <div
+        <button
           key={tab.label}
+          type="button"
           onClick={tab.onClick}
           style={{
             flex: 1,
@@ -19,6 +20,9 @@ export default function BottomNav({ tabs }: { tabs: NavTab[] }) {
             gap: 5,
             padding: '10px 0 14px',
             cursor: 'pointer',
+            background: 'none',
+            border: 'none',
+            fontFamily: 'inherit',
           }}
         >
           <div
@@ -38,7 +42,7 @@ export default function BottomNav({ tabs }: { tabs: NavTab[] }) {
           >
             {tab.label}
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );

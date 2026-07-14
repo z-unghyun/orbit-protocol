@@ -65,30 +65,33 @@ export default function RoundResultPage() {
       </div>
 
       {showNext && (
-        <div
+        <button
+          type="button"
           onClick={() => navigate(`/games/${gameId}/play`)}
-          style={{ background: game.accent, color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}
+          style={{ background: game.accent, color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginBottom: 12, width: '100%', border: 'none', fontFamily: 'inherit' }}
         >
           다음 라운드로
-        </div>
+        </button>
       )}
       {!result.passed && (
-        <div
+        <button
+          type="button"
           onClick={() => navigate(`/games/${gameId}/play`)}
-          style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}
+          style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginBottom: 12, width: '100%', border: 'none', fontFamily: 'inherit' }}
         >
           이 라운드 다시 도전
-        </div>
+        </button>
       )}
       {result.passed && isFinalRound && (
         <div style={{ fontSize: 12, color: '#9a9789', marginBottom: 12 }}>이 구역의 모든 라운드를 통과했습니다.</div>
       )}
-      <div
+      <button
+        type="button"
         onClick={() => navigate('/games')}
-        style={{ background: '#fff', color: '#1a1a1a', border: '1px solid #e4e2d9', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+        style={{ background: '#fff', color: '#1a1a1a', border: '1px solid #e4e2d9', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}
       >
         관제 구역 선택으로
-      </div>
+      </button>
     </div>
   );
 }

@@ -22,12 +22,13 @@ export default function RegisterPage() {
         <br />
         등록 없이도 게스트로 계속 플레이할 수 있으며, 진행 기록은 이 기기에 저장됩니다.
       </div>
-      <div
+      <button
+        type="button"
         onClick={() => navigate('/games')}
-        style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+        style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', width: '100%', border: 'none', fontFamily: 'inherit' }}
       >
         게스트로 계속 플레이
-      </div>
+      </button>
     </div>
   );
 }

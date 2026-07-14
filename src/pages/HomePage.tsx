@@ -58,7 +58,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div
+      <button
+        type="button"
         onClick={() => navigate('/games')}
         style={{
           background: '#1a1a1a',
@@ -70,10 +71,13 @@ export default function HomePage() {
           fontWeight: 600,
           cursor: 'pointer',
           marginBottom: 16,
+          width: '100%',
+          border: 'none',
+          fontFamily: 'inherit',
         }}
       >
         관제 구역 선택하기
-      </div>
+      </button>
 
       <div style={{ fontSize: 11, lineHeight: 1.6, color: '#b0ada0', textAlign: 'center', padding: '0 8px' }}>
         ORBIT PROTOCOL은 주의집중, 작업기억, 계획, 인지 전환 능력을 게임 형태로 연습하는 일반 웰니스·교육

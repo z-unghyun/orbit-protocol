@@ -16,6 +16,8 @@ interface HeaderProps {
   onGoHome: () => void;
 }
 
+const btnReset = { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' } as const;
+
 export default function Header({
   isMobile,
   showBack,
@@ -49,28 +51,33 @@ export default function Header({
         }}
       >
         {showBack ? (
-          <div
+          <button
+            type="button"
             onClick={onBack}
-            style={{ fontSize: 20, fontWeight: 600, cursor: 'pointer', width: 32, color: '#1a1a1a' }}
+            aria-label="뒤로"
+            style={{ ...btnReset, fontSize: 20, fontWeight: 600, width: 32, color: '#1a1a1a', textAlign: 'left', padding: 0 }}
           >
             ←
-          </div>
+          </button>
         ) : showHamburger ? (
-          <div
+          <button
+            type="button"
             onClick={onToggleMenu}
+            aria-label="메뉴 열기"
             style={{
+              ...btnReset,
               width: 22,
               height: 16,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              cursor: 'pointer',
+              padding: 0,
             }}
           >
             <div style={{ width: '100%', height: 2, background: '#1a1a1a', borderRadius: 2 }} />
             <div style={{ width: '100%', height: 2, background: '#1a1a1a', borderRadius: 2 }} />
             <div style={{ width: '100%', height: 2, background: '#1a1a1a', borderRadius: 2 }} />
-          </div>
+          </button>
         ) : (
           <div style={{ width: 32 }} />
         )}
@@ -79,9 +86,11 @@ export default function Header({
           {headerTitle}
         </div>
 
-        <div
+        <button
+          type="button"
           onClick={onToggleSound}
           style={{
+            ...btnReset,
             fontSize: 10,
             fontWeight: 600,
             letterSpacing: '.04em',
@@ -89,13 +98,12 @@ export default function Header({
             border: '1px solid #e4e2d9',
             borderRadius: 20,
             padding: '5px 10px',
-            cursor: 'pointer',
             minWidth: 38,
             textAlign: 'center',
           }}
         >
           {soundLabel}
-        </div>
+        </button>
       </div>
     );
   }
@@ -119,57 +127,65 @@ export default function Header({
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 44 }}>
         {showBack && (
-          <div
+          <button
+            type="button"
             onClick={onBack}
             style={{
+              ...btnReset,
               fontSize: 15,
               fontWeight: 600,
-              cursor: 'pointer',
               color: '#1a1a1a',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              padding: 0,
             }}
           >
             ← 뒤로
-          </div>
+          </button>
         )}
-        <div
+        <button
+          type="button"
           onClick={onGoHome}
           style={{
+            ...btnReset,
             fontSize: 15,
             fontWeight: 700,
             letterSpacing: '.06em',
             color: '#1a1a1a',
-            cursor: 'pointer',
             whiteSpace: 'nowrap',
             flex: 'none',
+            padding: 0,
           }}
         >
           ORBIT PROTOCOL
-        </div>
+        </button>
         <div style={{ display: 'flex', gap: 30 }}>
           {topNavItems.map((nav) => (
-            <div
+            <button
               key={nav.label}
+              type="button"
               onClick={nav.onClick}
               style={{
+                ...btnReset,
                 fontSize: 13,
                 fontWeight: 600,
                 color: '#635f52',
-                cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 flex: 'none',
+                padding: 0,
               }}
             >
               {nav.label}
-            </div>
+            </button>
           ))}
         </div>
       </div>
-      <div
+      <button
+        type="button"
         onClick={onToggleSound}
         style={{
+          ...btnReset,
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: '.04em',
@@ -177,13 +193,12 @@ export default function Header({
           border: '1px solid #e4e2d9',
           borderRadius: 20,
           padding: '7px 14px',
-          cursor: 'pointer',
           whiteSpace: 'nowrap',
           flex: 'none',
         }}
       >
         {soundLabel}
-      </div>
+      </button>
     </div>
   );
 }

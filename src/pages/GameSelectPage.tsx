@@ -29,8 +29,9 @@ export default function GameSelectPage() {
         {GAME_ORDER.map((id) => {
           const game = gameConfig[id];
           return (
-            <div
+            <button
               key={id}
+              type="button"
               onClick={() => navigate(`/games/${id}`)}
               style={{
                 background: '#fff',
@@ -42,6 +43,9 @@ export default function GameSelectPage() {
                 alignItems: 'center',
                 marginBottom: 14,
                 cursor: 'pointer',
+                width: '100%',
+                textAlign: 'left',
+                fontFamily: 'inherit',
               }}
             >
               <div style={{ flex: 'none' }}>
@@ -57,7 +61,7 @@ export default function GameSelectPage() {
                 </div>
               </div>
               <div style={{ fontSize: 18, color: '#c9c6b9' }}>›</div>
-            </div>
+            </button>
           );
         })}
       </div>

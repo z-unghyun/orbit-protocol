@@ -81,7 +81,8 @@ export default function GameIntroPage() {
         </div>
       </div>
 
-      <div
+      <button
+        type="button"
         onClick={() => navigate(`/games/${gameId}/play`)}
         style={{
           background: game.accent,
@@ -92,10 +93,13 @@ export default function GameIntroPage() {
           fontSize: 15,
           fontWeight: 600,
           cursor: 'pointer',
+          width: '100%',
+          border: 'none',
+          fontFamily: 'inherit',
         }}
       >
         라운드 시작
-      </div>
+      </button>
     </div>
   );
 }

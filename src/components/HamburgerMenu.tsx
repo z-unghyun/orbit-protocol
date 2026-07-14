@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 interface MenuItem {
   label: string;
   badge?: string;
@@ -10,11 +12,21 @@ interface HamburgerMenuProps {
 }
 
 export default function HamburgerMenu({ items, onClose }: HamburgerMenuProps) {
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   return (
     <>
-      <div
+      <button
+        type="button"
         onClick={onClose}
-        style={{ position: 'absolute', inset: 0, background: 'rgba(20,18,14,.35)', zIndex: 30 }}
+        aria-label="메뉴 닫기"
+        style={{ position: 'absolute', inset: 0, background: 'rgba(20,18,14,.35)', zIndex: 30, border: 'none', cursor: 'pointer' }}
       />
       <div
         style={{
@@ -41,13 +53,19 @@ export default function HamburgerMenu({ items, onClose }: HamburgerMenuProps) {
           }}
         >
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em' }}>ORBIT PROTOCOL</div>
-          <div onClick={onClose} style={{ fontSize: 20, cursor: 'pointer', color: '#9a9789' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="메뉴 닫기"
+            style={{ fontSize: 20, cursor: 'pointer', color: '#9a9789', background: 'none', border: 'none', fontFamily: 'inherit' }}
+          >
             ×
-          </div>
+          </button>
         </div>
         {items.map((item) => (
-          <div
+          <button
             key={item.label}
+            type="button"
             onClick={item.onClick}
             style={{
               padding: '14px 0',
@@ -56,6 +74,14 @@ export default function HamburgerMenu({ items, onClose }: HamburgerMenuProps) {
               justifyContent: 'space-between',
               alignItems: 'center',
               cursor: 'pointer',
+              background: 'none',
+              border: 'none',
+              borderBottomWidth: 1,
+              borderBottomStyle: 'solid',
+              borderBottomColor: '#f2f0e8',
+              fontFamily: 'inherit',
+              width: '100%',
+              textAlign: 'left',
             }}
           >
             <div style={{ fontSize: 15, fontWeight: 600, color: '#1a1a1a' }}>{item.label}</div>
@@ -73,7 +99,7 @@ export default function HamburgerMenu({ items, onClose }: HamburgerMenuProps) {
                 {item.badge}
               </div>
             )}
-          </div>
+          </button>
         ))}
         <div style={{ marginTop: 'auto', fontSize: 10.5, lineHeight: 1.6, color: '#c2bfb2', paddingTop: 16 }}>
           ORBIT PROTOCOL은 일반 웰니스·교육 콘텐츠이며 의료행위를 제공하지 않습니다.

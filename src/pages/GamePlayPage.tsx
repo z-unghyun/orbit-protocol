@@ -74,12 +74,13 @@ export default function GamePlayPage() {
           라운드 <b>{roundNumber}</b> / {game.total}
         </div>
         <div style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600 }}>점수 {liveScore.toLocaleString()}</div>
-        <div
+        <button
+          type="button"
           onClick={() => setPaused((p) => !p)}
-          style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600, cursor: 'pointer' }}
+          style={{ fontSize: 11.5, color: '#635f52', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}
         >
           {paused ? '재개' : '일시정지'}
-        </div>
+        </button>
       </div>
 
       {validGameId === 'vector' && <VectorRound config={VECTOR_ROUNDS[roundNumber - 1]} {...commonProps} />}

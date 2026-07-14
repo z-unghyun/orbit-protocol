@@ -191,12 +191,13 @@ export default function CommandRound({ roundNumber, config, seed, paused, onScor
             </button>
           );
         })}
-        <div
+        <button
+          type="button"
           onClick={() => !paused && startExecution()}
-          style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 8 }}
+          style={{ background: '#1a1a1a', color: '#fff', textAlign: 'center', padding: 16, borderRadius: 100, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 8, width: '100%', border: 'none', fontFamily: 'inherit' }}
         >
           임무 실행
-        </div>
+        </button>
       </>
     );
   }
